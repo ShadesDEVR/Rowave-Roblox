@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoWave - Login & Authentication</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #000; color: #fff; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        .auth-card {
+            position: relative; z-index: 2; background: rgba(15, 15, 20, 0.85);
+            backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px; border-radius: 16px; width: 420px; text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+        }
+        .logo { font-size: 3rem; font-weight: 900; margin-bottom: 8px; }
+        .logo .ro { color: #0070f3; }
+        .logo .wave { color: #ffffff; text-shadow: 0 0 10px rgba(0,0,0,0.8); } /* Styled clear on dark background */
+        .subhead { color: #aaa; margin-bottom: 24px; font-size: 1.1rem; }
+        
+        .btn {
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none;
+            font-weight: bold; cursor: pointer; transition: 0.2s ease;
+        }
+        .btn-discord { background: #5865F2; color: white; }
+        .btn-discord:hover { background: #4752C4; }
+        .btn-verify { background: #0070f3; color: white; margin-top: 12px; }
+        
+        input {
+            width: 100%; padding: 12px; margin: 8px 0; background: #181820;
+            border: 1px solid #333; color: #fff; border-radius: 8px; outline: none;
+        }
+        .verify-box { display: none; margin-top: 20px; text-align: left; }
+        .status-msg { margin-top: 10px; font-size: 0.9rem; font-weight: 500; }
+        .error { color: #ff4d4d; }
+        .success { color: #00e676; }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="auth-card">
+        <div class="logo"><span class="ro">Ro</span><span class="wave">Wave</span></div>
+        <div class="subhead">Sign in or Up TODAY</div>
+
+        <button class="btn btn-discord" onclick="startDiscordAuth()">Sign in with Discord</button>
+
+        <div class="verify-box" id="verifyBox">
+            <label style="font-size: 0.85rem; color: #ccc;">Enter Roblox Username:</label>
+            <input type="text" id="rbxUser" placeholder="Roblox Username">
+            
+            <div id="codeDisplay" style="font-size: 0.8rem; background: #222; padding: 10px; border-radius: 6px; margin: 6px 0;">
+                Set bio to: <b id="verifyCode" style="color: #0070f3;">RoWave-Verif-0000</b>
+            </div>
+
+            <button class="btn btn-verify" onclick="checkVerification()">Check & Verify Account</button>
+            <div class="status-msg" id="statusMsg"></div>
+        </div>
+    </div>
+
+    <script>
+        // Background Dot Panning Effect
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        
+        const dots = Array.from({ length: 120 }, () => ({
+            x: Math.random() * width, y: Math.random() * height,
+            r: Math.random() * 2 + 1, dx: (Math.random() - 0.5) * 1.5, dy: (Math.random() - 0.5) * 1.5
+        }));
+
+        function draw() {
+            ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            dots.forEach(d => {
+                ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
+                d.x += d.dx; d.y += d.dy;
+                if (d.x < 0 || d.x > width) d.dx *= -1;
+                if (d.y < 0 || d.y > height) d.dy *= -1;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Auth Logic
+        function startDiscordAuth() {
+            document.getElementById('verifyBox').style.display = 'block';
+            document.getElementById('verifyCode').innerText = "RoWave-" + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        async function checkVerification() {
+            const user = document.getElementById('rbxUser').value;
+            const targetCode = document.getElementById('verifyCode').innerText;
+            const status = document.getElementById('statusMsg');
+
+            if (!user) { status.className = "status-msg error"; status.innerText = "Error: Please enter a username."; return; }
+
+            // Simulated verification check via proxy/API
+            status.className = "status-msg"; status.innerText = "Checking profile description...";
+            setTimeout(() => {
+                // Mock success state:
+                const success = true; 
+                if (success) {
+                    status.className = "status-msg success"; status.innerText = "Verified! Redirecting...";
+                    setTimeout(() => window.location.href = "onboarding.html", 1000);
+                } else {
+                    status.className = "status-msg error"; status.innerText = "Error: Verification code not found in bio.";
+                }
+            }, 1200);
+        }
+    </script>
+</body>
+</html>

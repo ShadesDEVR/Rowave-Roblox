@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoWave - Control Panel Dashboard</title>
+    <style>
+        :root { --main-blue: #0070f3; --bg-dark: #090a0f; --panel-bg: #12141d; --border: #23263b; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: var(--bg-dark); color: #fff; display: flex; height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 240px; background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-brand { padding: 20px; font-weight: bold; font-size: 1.4rem; border-bottom: 1px solid var(--border); }
+        .sidebar-brand span { color: var(--main-blue); }
+        .nav-item { padding: 14px 20px; color: #8a8fadc7; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .nav-item:hover, .nav-item.active { background: #1a1d2e; color: #fff; border-left: 3px solid var(--main-blue); }
+
+        /* Main Workspace */
+        .viewport { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { height: 60px; background: var(--panel-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .content { padding: 24px; flex: 1; }
+        
+        .tab-page { display: none; }
+        .tab-page.active { display: block; }
+        
+        /* UI Elements */
+        .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .btn { background: var(--main-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-green { background: #10b981; }
+        .btn-red { background: #ef4444; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        
+        /* Modcall Layout */
+        .modcall-card { background: #1a1d2d; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .modcall-user { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; }
+
+        /* Session Studio Layout */
+        .session-layout { display: flex; gap: 20px; }
+        .attendees-list { width: 280px; background: #161824; padding: 16px; border-radius: 8px; }
+        .attendee-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: #1f2234; padding: 8px; border-radius: 6px; }
+        .phase-panel { flex: 1; background: #161824; padding: 16px; border-radius: 8px; }
+        .phase-header { display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <div class="sidebar">
+        <div class="sidebar-brand"><span>Ro</span>Wave Hub</div>
+        <div class="nav-item active" onclick="switchTab('orgs')">Organizations</div>
+        <div class="nav-item" onclick="switchTab('servers')">Live Servers</div>
+        <div class="nav-item" onclick="switchTab('moderation')">Moderation</div>
+        <div class="nav-item" onclick="switchTab('modcalls')">Mod Calls</div>
+        <div class="nav-item" onclick="switchTab('sessions')">Sessions Studio</div>
+        <div class="nav-item" onclick="switchTab('settings')">Game Settings</div>
+    </div>
+
+    <!-- MAIN VIEWPORT -->
+    <div class="viewport">
+        <div class="topbar">
+            <div>Organization: <b id="currentOrg">None Selected</b></div>
+            <div>
+                <span>Theme: <b>Dark</b></span> |
+                <button class="btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="location.href='onboarding.html'">Settings</button>
+            </div>
+        </div>
+
+        <div class="content">
+            
+            <!-- ORGANIZATIONS TAB -->
+            <div id="tab-orgs" class="tab-page active">
+                <div class="card">
+                    <h3>Create / Connect Organization</h3>
+                    <p style="color: #aaa; font-size: 0.85rem; margin: 8px 0;">Paste your Roblox Group/Community link below. Must hold maximum group rank to initialize.</p>
+                    <input type="text" id="groupLink" placeholder="https://www.roblox.com/groups/1234567/Community" style="width: 70%; padding: 8px; background: #090a0f; border: 1px solid #333; color: white; border-radius: 4px;">
+                    <button class="btn" onclick="createOrg()">Generate Org</button>
+                </div>
+            </div>
+
+            <!-- LIVE SERVERS & PLAYERS -->
+            <div id="tab-servers" class="tab-page">
+                <h3>Active Servers & Player Discovery</h3>
+                <div class="grid-2" style="margin-top: 15px;">
+                    <div class="card">
+                        <h4>Running Instances</h4>
+                        <div id="serverList" style="margin-top: 10px;">
+                            <div style="padding: 10px; background: #1a1d2d; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                <div><b>Server #J-9012</b> (14/30 Players)</div>
+                                <button class="btn btn-green">Join Server</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4>Player Directory</h4>
+                        <p style="color: #aaa; font-size: 0.85rem;">Users currently logged across instances.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODERATION & ACCOUNT VIEWING -->
+            <div id="tab-moderation" class="tab-page">
+                <div class="card">
+                    <h3>Moderation Suite & Case Logs</h3>
+                    <div style="margin: 10px 0;">
+                        <button class="btn btn-red">Issue Game Ban</button>
+                        <button class="btn">Issue Warning</button>
+                        <button class="btn">Leave Of Absence (LOA)</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Target User</th><th>Action</th><th>Reason</th><th>Issuer</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>@User_Alpha</td><td>Game Ban</td><td>Exploiting</td><td>@Mod_Admin</td><td>Active</td></tr>
+                            <tr><td>@User_Beta</td><td>Warning</td><td>Spamming</td><td>@Mod_Admin</td><td>Logged</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h3>Custom Ban Types & Code Activation</h3>
+                    <p style="font-size: 0.85rem; color: #aaa;">Requires Pass <b>1961922551</b> or OG Code unlock.</p>
+                    <input type="text" id="modPassCode" placeholder="Enter Access Code (e.g. WaveLinksOG129907)" style="width: 300px; padding: 8px; background: #090a0f; border: 1px solid #333; color: white;">
+                    <button class="btn" onclick="unlockCustomBans()">Redeem</button>
+                </div>
+            </div>
+
+            <!-- MOD CALLS -->
+            <div id="tab-modcalls" class="tab-page">
+                <h3>Incoming In-Game Moderator Calls</h3>
+                <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 15px;">Requires Pass <b>1966224268</b> or code validation.</p>
+                
+                <div id="modcallContainer">
+                    <div class="modcall-card">
+                        <div class="modcall-user">
+                            <div class="avatar"></div>
+                            <div>
+                                <div><b>coolbuilder22</b> (ID: 98124571)</div>
+                                <div style="font-size: 0.8rem; color: #aaa;">Reason: "Wall clipping in sector 4" | Server #7</div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-green">Respond</button>
+                            <button class="btn">Join Server</button>
+                            <button class="btn btn-red">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SESSIONS STUDIO -->
+            <div id="tab-sessions" class="tab-page">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Session Management Studio</h3>
+                    <button class="btn btn-green" onclick="hostSession()">Host New Session</button>
+                </div>
+
+                <div class="session-layout">
+                    <!-- Left Column: Attendees (Going Down) -->
+                    <div class="attendees-list">
+                        <h4>Attendees Queue</h4>
+                        <div style="margin-top: 10px;" id="attendeeContainer">
+                            <div class="attendee-item">
+                                <div class="avatar"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.85rem; font-weight: bold;">Attendee1</div>
+                                    <div style="font-size: 0.75rem; color: #aaa;">Rank: Recruit</div>
+                                </div>
+                                <input type="checkbox" title="Phase 1 Status">
+                                <input type="checkbox" title="Phase 2 Status">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Controls & Phases -->
+                    <div class="phase-panel">
+                        <div class="phase-header">
+                            <div>Active Phase: <b id="currentPhase">Phase 1 - Initialization</b></div>
+                            <div>
+                                <button class="btn" onclick="nextPhase()">Next Phase</button>
+                                <button class="btn btn-red">End Session</button>
+                            </div>
+                        </div>
+
+                        <!-- Session Management Tabs -->
+                        <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                            <b style="cursor: pointer;" onclick="switchSessionSubTab('manage')">Manage (Default)</b> |
+                            <b style="cursor: pointer; color: #aaa;" onclick="switchSessionSubTab('players')">Player Management</b> |
+                            <b style="cursor: pointer; color: #aaa;" onclick="switchSessionSubTab('overview')">Overview (Telemetry)</b>
+                        </div>
+
+                        <div id="session-sub-manage" style="margin-top: 15px;">
+                            <h4>Grading & Performance Logs</h4>
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 0.85rem;">Score (1-10):</label>
+                                <input type="range" min="1" max="10" value="5" style="width: 200px;">
+                                <button class="btn" style="margin-left: 10px;">Passed Mark</button>
+                                <button class="btn btn-green">Perfect Pass</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME SETTINGS TAB -->
+            <div id="tab-settings" class="tab-page">
+                <h3>Game Integration & Scripting Settings</h3>
+                <div class="card" style="margin-top: 15px;">
+                    <h4>Command Setup</h4>
+                    <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 10px;">Default in-game call trigger command:</p>
+                    <input type="text" value="Modcall Reason" style="width: 300px; padding: 8px; background: #090a0f; border: 1px solid #333; color: white;">
+                    <button class="btn">Save Command</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function switchSessionSubTab(subTab) {
+            alert("Switched Session View to: " + subTab);
+        }
+
+        function createOrg() {
+            const link = document.getElementById('groupLink').value;
+            if(!link) return alert('Enter a valid group URL');
+            document.getElementById('currentOrg').innerText = "Verified Roblox Group";
+            alert('Organization connected successfully!');
+        }
+
+        function unlockCustomBans() {
+            const code = document.getElementById('modPassCode').value;
+            if(code === "WaveLinksOG129907") {
+                alert("Code accepted! Infinite Custom Ban Types Unlocked.");
+            } else {
+                alert("Invalid Code. Gamepass purchase required.");
+            }
+        }
+
+        function hostSession() {
+            alert("Checking premium status... Auto-detecting live server instance and attendees.");
+        }
+    </script>
+</body>
+</html>

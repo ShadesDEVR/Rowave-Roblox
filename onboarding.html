@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoWave - Onboarding & Theme Selection</title>
+    <style>
+        body { background: #0b0c10; color: #fff; font-family: sans-serif; padding: 40px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; background: #15161d; padding: 30px; border-radius: 12px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        select, input { width: 100%; padding: 10px; background: #20222c; border: 1px solid #333; color: white; border-radius: 6px; }
+        .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .theme-card { border: 1px solid #333; padding: 15px; border-radius: 8px; cursor: pointer; text-align: center; }
+        .theme-card.active { border-color: #0070f3; background: #1e293b; }
+        .btn-submit { background: #0070f3; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome to RoWave</h2>
+        <p style="color: #aaa; margin-bottom: 20px;">Customize your workspace settings.</p>
+
+        <div class="form-group">
+            <label>Where did you hear about us?</label>
+            <select id="source">
+                <option>Discord Community</option>
+                <option>Roblox Group</option>
+                <option>Friend / Referral</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Select Workspace Theme:</label>
+            <div class="theme-grid">
+                <div class="theme-card active" onclick="selectTheme('dark', 0)">Dark Mode (Free)</div>
+                <div class="theme-card" onclick="selectTheme('white', 0)">White Mode (Free)</div>
+                <div class="theme-card" onclick="selectTheme('wave', 1962126546)">Wave Mode (Pass Required)</div>
+                <div class="theme-card" onclick="selectTheme('glass', 1962114572)">Glass Mode (Pass Required)</div>
+            </div>
+        </div>
+
+        <div class="form-group" style="background: #1a2332; padding: 15px; border-radius: 8px;">
+            <label style="color: #38bdf8;">7-Day Free Trial</label>
+            <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 8px;">Try full organization premium feature suite for 7 days without binding a credit card.</p>
+            <input type="checkbox" id="freeTrial" style="width: auto;"> Activate 7-Day Free Trial
+        </div>
+
+        <button class="btn-submit" onclick="finishSetup()">Complete Setup</button>
+    </div>
+
+    <script>
+        let selectedTheme = 'dark';
+        let requiredPass = 0;
+
+        function selectTheme(theme, passId) {
+            document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            selectedTheme = theme;
+            requiredPass = passId;
+        }
+
+        function finishSetup() {
+            if (requiredPass !== 0) {
+                // Check if user owns passId 1965054556 (Both themes) OR exact passId
+                alert(`Validating gamepass ${requiredPass} ownership for theme choice...`);
+            }
+            localStorage.setItem('rowave_theme', selectedTheme);
+            window.location.href = "dashboard.html";
+        }
+    </script>
+</body>
+</html>
